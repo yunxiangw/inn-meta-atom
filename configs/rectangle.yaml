@@ -1,0 +1,55 @@
+model_name: inn-rectangle
+
+exp_group: inverse-design
+exp_name: rectangle
+exp_desc: experiment
+
+enable_wandb: True
+
+device: 'cuda'
+
+data_dir: 'data/rectangle'
+train_batch_size: 512
+test_batch_size: 512
+
+data:
+  input_dim: 8
+  x_dim: 2
+  y_dim: 1
+  z_dim: 2
+  y_noise: 0 # 5.0e-2
+  z_noise: 0 # 2.0e-2
+  pad_noise: 1.0e-2
+
+model:
+  input_dim: ${data.input_dim}
+  n_blocks: 3
+  exponent_clamping: 4.0
+  hidden_layers: [64]
+  verbose: False
+
+criterion:
+  input_dim: ${data.input_dim}
+  x_dim: ${data.x_dim}
+  y_dim: ${data.y_dim}
+  z_dim: ${data.z_dim}
+  weight:
+    forward_fit: 50
+    forward_mmd: 100
+    backward_fit: 20
+    backward_mmd: 200
+  mmd_kernel:
+    forward: [0.05, 0.2, 0.5, 0.9, 1.3] # [[0.2, 2], [1.5, 2], [3.0, 2]]
+    backward: [0.05, 0.2, 0.5, 0.9, 1.3] # [[0.1, 0.1], [0.8, 0.5], [0.2, 2]]
+
+train:
+  optimizer:
+    lr: 1.0e-3
+    betas: [0.9, 0.95]
+    eps: 1.0e-6
+    weight_decay: 1.0e-5
+  scheduler:
+    # step_size: 20
+    gamma: 0.98
+  # init_epoch: 50
+  n_epoch: 100

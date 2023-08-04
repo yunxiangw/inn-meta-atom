@@ -1,0 +1,56 @@
+model_name: inn-meta-atom
+
+exp_group: inverse-design
+exp_name: meta-atom-632nm-xy
+exp_desc: experiment
+
+enable_wandb: True
+
+device: 'cuda'
+
+data_dir: 'data/meta-atom'
+train_batch_size: 512
+test_batch_size: 512
+
+data:
+  input_dim: 12
+  x_dim: 4
+  y_dim: 4
+  z_dim: 2
+  y_noise: 0  # 5.0e-2
+  z_noise: 0  # 2.0e-2
+  pad_noise: 1.0e-2
+
+model:
+  input_dim: ${data.input_dim}
+  n_blocks: 6
+  exponent_clamping: 4.0
+  hidden_layers: [64, 64, 64]
+  verbose: False
+
+criterion:
+  input_dim: ${data.input_dim}
+  x_dim: ${data.x_dim}
+  y_dim: ${data.y_dim}
+  z_dim: ${data.z_dim}
+  weight:
+    forward_fit: 50
+    forward_mmd: 100
+    backward_fit: 20
+    backward_mmd: 250
+  mmd_kernel:
+    forward: [1.0e-3, 1.0e-2, 0.125, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64] # [0.01, 0.1, 0.2, 0.4, 0.8, 1, 5, 10, 15, 20, 25, 30] # [[0.2, 2], [1.5, 2], [3.0, 2]] [0.2, 0.5, 1, 1.5, 3] [0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64]
+    backward: [1.0e-3, 1.0e-2, 0.125, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64] # [[0.1, 0.1], [0.8, 0.5], [0.2, 2]] [0.5, 0.9, 1.3, 2, 5] [0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64]
+
+train:
+  optimizer:
+    lr: 1.0e-3
+    betas: [0.9, 0.95]
+    eps: 1.0e-6
+    weight_decay: 1.0e-5
+  scheduler:
+    # step_size: 20
+    gamma: 0.98
+  init_epoch: 50
+  n_epoch: 200
+
